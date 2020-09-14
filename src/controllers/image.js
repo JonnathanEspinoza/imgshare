@@ -3,8 +3,10 @@
 const path = require('path');
 const { randomNumber } = require('../helpers/libs');
 const fs = require('fs-extra');
+const md5 = require('md5');
 
-const { Image } = require('../models');
+const { Image, Comment } = require('../models');
+const { Model } = require('mongoose');
 
 const ctrl = {};
 
@@ -23,7 +25,7 @@ ctrl.create = (req, res) => {
         if (images.length > 0) {
             saveImage();
         } else {
-            console.log(imgURL);
+            //console.log(imgURL);
             const imageTempPath = req.file.path; // lugar en donde se almacena la imagen
             const ext = path.extname(req.file.originalname).toLowerCase();// obtener la extencion (.png, etc)
             const targetPath = path.resolve(`src/public/upload/${imgURL}${ext}`)// ruta en donde colocar la imagen
@@ -50,9 +52,20 @@ ctrl.create = (req, res) => {
 ctrl.like = (req, res) => {
 
 };
-ctrl.comment = (req, res) => {
 
+ctrl.comment = async (req, res) => {
+    //console.log(req.body);
+    const image = await Image.findOne({filename: {$regex: req.params.image_id}});
+    if (image){
+        const newComment = new Comment(req.body);
+        newComment.gravatar = md5(newComment.email);
+        newComment.image_id = image._id;
+        //console.log(newComment);
+        await newComment.save();
+        res.redirect('/image/' + image.uniqueId);
+    }
 };
+
 ctrl.remove = (req, res) => {
 
 };
