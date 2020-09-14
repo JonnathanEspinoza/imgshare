@@ -1,0 +1,8 @@
+# uploads folder
+src/public/upload
+
+# environment variables
+.env
+
+# node mofules
+node_modules
