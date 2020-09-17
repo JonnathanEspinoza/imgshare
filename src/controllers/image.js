@@ -11,10 +11,20 @@ const ctrl = {};
 
 ctrl.index = async (req, res) => {
     //console.log('Params:',req.params.image_id);
-    const image = await Image.findOne({filename: {$regex: req.params.image_id}});// $regex => expresiones regulares
+    const viewModel = {image: {}, comments: {}};
+    const image = await Image.findOne({ filename: { $regex: req.params.image_id } });// $regex => expresiones regulares
     //console.log(image);
-    const comments = await Comment.find({image_id: image._id});
-    res.render('image', {image, comments});
+    if (image) {
+        image.views = image.views + 1;
+        viewModel.image = image;
+        await image.save();
+        const comments = await Comment.find({ image_id: image._id });
+        viewModel.comments = comments;
+        res.render('image', viewModel);
+    } else {
+        res.redirect('/');
+    }
+
 };
 
 ctrl.create = (req, res) => {
@@ -55,14 +65,16 @@ ctrl.like = (req, res) => {
 
 ctrl.comment = async (req, res) => {
     //console.log(req.body);
-    const image = await Image.findOne({filename: {$regex: req.params.image_id}});
-    if (image){
+    const image = await Image.findOne({ filename: { $regex: req.params.image_id } });
+    if (image) {
         const newComment = new Comment(req.body);
         newComment.gravatar = md5(newComment.email);
         newComment.image_id = image._id;
         //console.log(newComment);
         await newComment.save();
         res.redirect('/image/' + image.uniqueId);
+    }else{
+        res.redirect('/');
     }
 };
 
