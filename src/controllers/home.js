@@ -10,6 +10,7 @@ ctrl.index = async (req, res) => {
     let viewModel = { images: [] };
     viewModel.images = images;
     viewModel = await sidebar(viewModel);
+    console.log(viewModel.sidebar);
     res.render('index', viewModel);
 };
 
